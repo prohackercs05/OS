@@ -1,0 +1,375 @@
+================================================================================
+                    DISK SCHEDULING
+                    Questions and C Programs
+================================================================================
+
+================================================================================
+Q1. FCFS (First Come First Served) Disk Scheduling
+================================================================================
+
+Slip Numbers: 1, 21, 26, 30
+
+Question:
+Write a simulation program for disk scheduling using FCFS algorithm. Accept 
+total number of disk blocks, disk request string, and current head position 
+from the user. Display the list of request in the order in which it is served. 
+Also display the total number of head movements.
+
+Test Data:
+- Slip 1:  Requests: 55, 58, 39, 18, 90, 160, 150, 38, 184. Head: 50
+- Slip 26: Requests: 56, 59, 40, 19, 91, 161, 151, 39, 185. Head: 48
+- Slip 30: Requests: 65, 95, 30, 91, 18, 116, 142, 44, 168. Head: 52
+
+Solution (C Code):
+================================================================================
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n, head, total_movement = 0;
+    
+    printf("Enter total number of disk requests: ");
+    scanf("%d", &n);
+    
+    int requests[n];
+    printf("Enter the request string: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &requests[i]);
+    }
+    
+    printf("Enter initial head position: ");
+    scanf("%d", &head);
+    
+    printf("\nOrder of service: ");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", requests[i]);
+        total_movement += abs(requests[i] - head);
+        head = requests[i];
+    }
+    
+    printf("\nTotal head movements: %d\n", total_movement);
+    
+    return 0;
+}
+/*
+
+================================================================================
+Q2. SCAN Disk Scheduling Algorithm
+================================================================================
+
+Slip Numbers: 4, 7, 13, 18, 20
+
+Question:
+Write a simulation program for disk scheduling using SCAN algorithm.
+
+Test Data:
+- Slip 4:  Requests: 86, 147, 91, 170, 95, 130, 102, 70. Head: 125, Direction: Left
+- Slip 7:  Requests: 82, 170, 43, 140, 24, 16, 190. Head: 50, Direction: Right
+- Slip 13: Requests: 176, 79, 34, 60, 92, 11, 41, 114. Head: 65, Direction: Left
+- Slip 18: Requests: 33, 99, 142, 52, 197, 79, 46, 65. Head: 72, Direction: Right
+- Slip 20: Requests: 33, 99, 142, 52, 197, 79, 46, 65. Head: 72 (User defined direction)
+
+Solution (C Code):
+================================================================================
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+void sort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++)
+        for (int j = 0; j < n - i - 1; j++)
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+}
+
+int main() {
+    int n, head, max_blocks, i, total_movement = 0;
+    char direction[10];
+
+    printf("Enter total number of disk blocks: ");
+    scanf("%d", &max_blocks);
+    printf("Enter number of requests: ");
+    scanf("%d", &n);
+    int requests[n + 2], serviced[n + 2];
+    printf("Enter requests: ");
+    for (i = 0; i < n; i++) scanf("%d", &requests[i]);
+    printf("Enter initial head position: ");
+    scanf("%d", &head);
+
+    
+    requests[n] = 0;
+    requests[n+1] = head;
+    sort(requests, n + 2);
+
+    int pos;
+    for (i = 0; i < n + 2; i++) {
+        if (requests[i] == head) {
+            pos = i;
+            break;
+        }
+    }
+
+    printf("\nOrder of service: ");
+    
+    for (i = pos - 1; i >= 0; i--) {
+        printf("%d ", requests[i]);
+        total_movement += abs(requests[i] - head);
+        head = requests[i];
+    }
+    
+    for (i = pos + 1; i < n + 2; i++) {
+        if(requests[i] == head) continue; 
+        if(requests[i] == 0) continue; 
+        printf("%d ", requests[i]);
+        total_movement += abs(requests[i] - head);
+        head = requests[i];
+    }
+
+    printf("\nTotal head movements: %d\n", total_movement);
+    return 0;
+}
+/*
+
+================================================================================
+Q3. C-SCAN (Circular SCAN) Disk Scheduling
+================================================================================
+
+Slip Numbers: 6, 10, 15, 19
+
+Question:
+Write a simulation program for disk scheduling using C-SCAN algorithm.
+
+Test Data:
+- Slip 6:  Requests: 80, 150, 60, 135, 40, 35, 170. Head: 70, Direction: Right
+- Slip 10: Requests: 33, 99, 142, 52, 197, 79, 46, 65. Head: 72, Direction: Left
+- Slip 15: Requests: 80, 150, 60, 135, 40, 35, 170. Head: 70, Direction: Right
+- Slip 19: Requests: 23, 89, 132, 42, 187, 69, 36, 55. Head: 40, Direction: Left
+
+Solution (C Code):
+================================================================================
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+void sort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++)
+        for (int j = 0; j < n - i - 1; j++)
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+}
+
+int main() {
+    int n, head, max, i, total = 0;
+    printf("Enter max blocks, num requests, head: ");
+    scanf("%d %d %d", &max, &n, &head);
+    int req[n + 3], pos;
+    printf("Enter requests: ");
+    for (i = 0; i < n; i++) scanf("%d", &req[i]);
+    
+    req[n] = 0; req[n+1] = max - 1; req[n+2] = head;
+    sort(req, n + 3);
+
+    for (i = 0; i < n + 3; i++) if (req[i] == head) { pos = i; break; }
+
+    printf("Order: ");
+    
+    for (i = pos + 1; i < n + 3; i++) {
+        printf("%d ", req[i]);
+        total += abs(req[i] - head);
+        head = req[i];
+    }
+    
+    total += abs(head - 0);
+    head = 0;
+    printf("0 ");
+    for (i = 0; i < pos; i++) {
+        if(req[i] == 0) continue;
+        printf("%d ", req[i]);
+        total += abs(req[i] - head);
+        head = req[i];
+    }
+    printf("\nTotal head movement: %d\n", total);
+    return 0;
+}
+/*
+
+================================================================================
+Q4. SSTF (Shortest Seek Time First) Disk Scheduling
+================================================================================
+
+Slip Numbers: 8, 14, 23
+
+Question:
+Write a simulation program for disk scheduling using SSTF algorithm.
+
+Test Data:
+- Slip 8:  Requests: 186, 89, 44, 70, 102, 22, 51, 124. Head: 70
+- Slip 14: Requests: 55, 58, 39, 18, 90, 160, 150, 38, 184. Head: 50
+- Slip 23: Requests: 24, 90, 133, 43, 188, 70, 37, 55. Head: 58
+
+Solution (C Code):
+================================================================================
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n, head, i, total = 0;
+    printf("Enter num requests and head: ");
+    scanf("%d %d", &n, &head);
+    int req[n], visited[n];
+    printf("Enter requests: ");
+    for(i=0; i<n; i++) { scanf("%d", &req[i]); visited[i]=0; }
+
+    printf("Order: ");
+    for(int k=0; k<n; k++) {
+        int min=9999, index=-1;
+        for(i=0; i<n; i++) {
+            if(!visited[i]) {
+                int dist = abs(req[i]-head);
+                if(dist < min) { min=dist; index=i; }
+            }
+        }
+        visited[index]=1;
+        total += min;
+        head = req[index];
+        printf("%d ", head);
+    }
+    printf("\nTotal movement: %d\n", total);
+    return 0;
+}
+/*
+
+================================================================================
+Q5. LOOK Disk Scheduling Algorithm
+================================================================================
+
+Slip Numbers: 9, 17, 25, 27
+
+Question:
+Write a simulation program for disk scheduling using LOOK algorithm.
+
+Test Data:
+- Slip 9:  Requests: 176, 79, 34, 60, 92, 11, 41, 114. Head: 65, Direction: Left
+- Slip 17: Requests: 23, 89, 132, 42, 187, 69, 36, 55. Head: 40, Direction: Left
+- Slip 25: Requests: 86, 147, 91, 170, 95, 130, 102, 70. Head: 125 (User defined direction)
+- Slip 27: Requests: 176, 79, 34, 60, 92, 11, 41, 114. Head: 65, Direction: Right
+
+Solution (C Code):
+================================================================================
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+void sort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++)
+        for (int j = 0; j < n - i - 1; j++)
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+}
+
+int main() {
+    int n, head, i, total=0;
+    printf("Enter num requests and head: ");
+    scanf("%d %d", &n, &head);
+    int req[n+1], pos;
+    printf("Enter requests: ");
+    for(i=0; i<n; i++) scanf("%d", &req[i]);
+    
+    req[n]=head;
+    sort(req, n+1);
+    for(i=0; i<n+1; i++) if(req[i]==head) { pos=i; break; }
+
+    printf("Order: ");
+    
+    for(i=pos-1; i>=0; i--) {
+        printf("%d ", req[i]);
+        total += abs(req[i]-head);
+        head = req[i];
+    }
+    for(i=pos+1; i<n+1; i++) {
+        printf("%d ", req[i]);
+        total += abs(req[i]-head);
+        head = req[i];
+    }
+    printf("\nTotal movement: %d\n", total);
+    return 0;
+}
+/*
+
+================================================================================
+Q6. C-LOOK (Circular LOOK) Disk Scheduling
+================================================================================
+
+Slip Numbers: 12, 28, 29
+
+Question:
+Write a simulation program for disk scheduling using C-LOOK algorithm.
+
+Test Data:
+- Slip 12: Requests: 23, 89, 132, 42, 187, 69, 36, 55. Head: 40, Direction: Right
+- Slip 28: Requests: 56, 59, 40, 19, 91, 161, 151, 39, 185. Head: 48 (User defined direction)
+- Slip 29: Requests: 80, 150, 60, 135, 40, 35, 170. Head: 70, Direction: Right
+
+Solution (C Code):
+================================================================================
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+void sort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++)
+        for (int j = 0; j < n - i - 1; j++)
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+}
+
+int main() {
+    int n, head, i, total=0;
+    printf("Enter num requests and head: ");
+    scanf("%d %d", &n, &head);
+    int req[n+1], pos;
+    printf("Enter requests: ");
+    for(i=0; i<n; i++) scanf("%d", &req[i]);
+    
+    req[n]=head;
+    sort(req, n+1);
+    for(i=0; i<n+1; i++) if(req[i]==head) { pos=i; break; }
+
+    printf("Order: ");
+    
+    for(i=pos+1; i<n+1; i++) {
+        printf("%d ", req[i]);
+        total += abs(req[i]-head);
+        head = req[i];
+    }
+    
+    total += abs(head - req[0]);
+    head = req[0];
+    printf("%d ", head);
+    for(i=1; i<pos; i++) {
+        printf("%d ", req[i]);
+        total += abs(req[i]-head);
+        head = req[i];
+    }
+    printf("\nTotal movement: %d\n", total);
+    return 0;
+}
+/*
+
+================================================================================
+                           END OF DISK SCHEDULING
+================================================================================

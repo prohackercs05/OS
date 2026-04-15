@@ -1,0 +1,342 @@
+================================================================================
+                    MPI PROGRAMS
+                    Questions and C Programs
+================================================================================
+
+================================================================================
+Q1. MPI - Sum of 1000 Numbers
+================================================================================
+
+Slip Numbers: 2, 28
+
+Question:
+Write an MPI program to calculate sum of randomly generated 1000 numbers 
+on a cluster.
+
+Solution (C Code):
+================================================================================
+*/
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 1000
+
+int main(int argc, char** argv) {
+    int rank, num_procs;
+    int data[SIZE];
+    int local_sum = 0, total_sum = 0;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
+    if (rank == 0) {
+        srand(time(NULL));
+        for (int i = 0; i < SIZE; i++) data[i] = rand() % 100;
+    }
+
+    
+    int chunk_size = SIZE / num_procs;
+    int local_data[chunk_size];
+    MPI_Scatter(data, chunk_size, MPI_INT, local_data, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
+
+    for (int i = 0; i < chunk_size; i++) local_sum += local_data[i];
+
+    MPI_Reduce(&local_sum, &total_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Total sum of 1000 numbers is: %d\n", total_sum);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
+/*
+Compile: mpicc program.c -o program
+Run: mpirun -np 4 ./program
+
+================================================================================
+Q2. MPI - Sum and Average of 1000 Numbers
+================================================================================
+
+Slip Numbers: 3, 10, 12
+
+Question:
+Write an MPI program to calculate sum and average of randomly generated 
+1000 numbers on a cluster.
+
+Solution (C Code):
+================================================================================
+*/
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 1000
+
+int main(int argc, char** argv) {
+    int rank, num_procs;
+    int data[SIZE];
+    int local_sum = 0, total_sum = 0;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
+    if (rank == 0) {
+        srand(time(NULL));
+        for (int i = 0; i < SIZE; i++) data[i] = rand() % 100;
+    }
+
+    int chunk_size = SIZE / num_procs;
+    int local_data[chunk_size];
+    MPI_Scatter(data, chunk_size, MPI_INT, local_data, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
+
+    for (int i = 0; i < chunk_size; i++) local_sum += local_data[i];
+
+    MPI_Reduce(&local_sum, &total_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Sum: %d\n", total_sum);
+        printf("Average: %.2f\n", (float)total_sum / SIZE);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
+/*
+Compile: mpicc program.c -o program
+Run: mpirun -np 4 ./program
+
+================================================================================
+Q3. MPI - Find Maximum Number
+================================================================================
+
+Slip Numbers: 5, 20, 27
+
+Question:
+Write an MPI program to find the maximum number from randomly generated 
+1000 numbers on a cluster (Use MPI_Reduce).
+
+Solution (C Code):
+================================================================================
+*/
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 1000
+
+int main(int argc, char** argv) {
+    int rank, num_procs;
+    int data[SIZE];
+    int local_max = 0, total_max = 0;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
+    if (rank == 0) {
+        srand(time(NULL));
+        for (int i = 0; i < SIZE; i++) data[i] = rand() % 100;
+    }
+
+    int chunk_size = SIZE / num_procs;
+    int local_data[chunk_size];
+    MPI_Scatter(data, chunk_size, MPI_INT, local_data, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
+
+    local_max = local_data[0];
+    for (int i = 1; i < chunk_size; i++) {
+        if (local_data[i] > local_max) local_max = local_data[i];
+    }
+
+    MPI_Reduce(&local_max, &total_max, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Maximum number: %d\n", total_max);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
+/*
+Compile: mpicc program.c -o program
+Run: mpirun -np 4 ./program
+
+================================================================================
+Q4. MPI - Find Minimum Number
+================================================================================
+
+Slip Numbers: 11, 16, 24, 30
+
+Question:
+Write an MPI program to find the minimum number from randomly generated 
+1000 numbers on a cluster (Use MPI_Reduce).
+
+Solution (C Code):
+================================================================================
+*/
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 1000
+
+int main(int argc, char** argv) {
+    int rank, num_procs;
+    int data[SIZE];
+    int local_min = 0, total_min = 0;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
+    if (rank == 0) {
+        srand(time(NULL));
+        for (int i = 0; i < SIZE; i++) data[i] = rand() % 100;
+    }
+
+    int chunk_size = SIZE / num_procs;
+    int local_data[chunk_size];
+    MPI_Scatter(data, chunk_size, MPI_INT, local_data, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
+
+    local_min = local_data[0];
+    for (int i = 1; i < chunk_size; i++) {
+        if (local_data[i] < local_min) local_min = local_data[i];
+    }
+
+    MPI_Reduce(&local_min, &total_min, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Minimum number: %d\n", total_min);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
+/*
+Compile: mpicc program.c -o program
+Run: mpirun -np 4 ./program
+
+================================================================================
+Q5. MPI - Sum of Even Numbers
+================================================================================
+
+Slip Numbers: 21, 29
+
+Question:
+Write an MPI program to calculate sum of all even randomly generated 
+1000 numbers on a cluster.
+
+Solution (C Code):
+================================================================================
+*/
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 1000
+
+int main(int argc, char** argv) {
+    int rank, num_procs;
+    int data[SIZE];
+    int local_even_sum = 0, total_even_sum = 0;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
+    if (rank == 0) {
+        srand(time(NULL));
+        for (int i = 0; i < SIZE; i++) data[i] = rand() % 100;
+    }
+
+    int chunk_size = SIZE / num_procs;
+    int local_data[chunk_size];
+    MPI_Scatter(data, chunk_size, MPI_INT, local_data, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
+
+    for (int i = 0; i < chunk_size; i++) {
+        if (local_data[i] % 2 == 0) {
+            local_even_sum += local_data[i];
+        }
+    }
+
+    MPI_Reduce(&local_even_sum, &total_even_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Sum of all even numbers: %d\n", total_even_sum);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
+/*
+Compile: mpicc program.c -o program
+Run: mpirun -np 4 ./program
+
+================================================================================
+Q6. MPI - Sum of Odd Numbers
+================================================================================
+
+Slip Numbers: 22, 24
+
+Question:
+Write an MPI program to calculate sum of all odd randomly generated 
+1000 numbers on a cluster.
+
+Solution (C Code):
+================================================================================
+*/
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 1000
+
+int main(int argc, char** argv) {
+    int rank, num_procs;
+    int data[SIZE];
+    int local_odd_sum = 0, total_odd_sum = 0;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
+    if (rank == 0) {
+        srand(time(NULL));
+        for (int i = 0; i < SIZE; i++) data[i] = rand() % 100;
+    }
+
+    int chunk_size = SIZE / num_procs;
+    int local_data[chunk_size];
+    MPI_Scatter(data, chunk_size, MPI_INT, local_data, chunk_size, MPI_INT, 0, MPI_COMM_WORLD);
+
+    for (int i = 0; i < chunk_size; i++) {
+        if (local_data[i] % 2 != 0) {
+            local_odd_sum += local_data[i];
+        }
+    }
+
+    MPI_Reduce(&local_odd_sum, &total_odd_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Sum of all odd numbers: %d\n", total_odd_sum);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
+/*
+Compile: mpicc program.c -o program
+Run: mpirun -np 4 ./program
+
+================================================================================
+                           END OF MPI PROGRAMS
+================================================================================
